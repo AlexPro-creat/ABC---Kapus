@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: kapous-abc
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: .
