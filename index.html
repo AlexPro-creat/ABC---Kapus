@@ -47,19 +47,21 @@ main{max-width:1500px;margin:0 auto;padding:0 16px 40px}
 .count{color:var(--muted);font-size:13px;margin-left:auto}
 .wrap{overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;max-height:72vh}
 table{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
-th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:top}
-th{position:sticky;top:0;background:var(--card);z-index:2;font-size:12px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none}
+th,td{padding:6px 6px;font-size:13px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:top}
+th{position:sticky;top:0;background:var(--card);z-index:2;font-size:11px;white-space:normal;line-height:1.2;vertical-align:bottom;color:var(--muted);font-weight:600;cursor:pointer;user-select:none}
 th.sorted{color:var(--accent)}
 td.l,th.l{text-align:left}
-td.name{text-align:left;white-space:normal;min-width:260px;max-width:380px}
+td.name{text-align:left;white-space:normal;min-width:190px;max-width:300px}
+td small{color:var(--muted);display:block;font-size:11px;white-space:normal}
 td.name small{color:var(--muted);display:block}
 .badge{display:inline-block;min-width:22px;text-align:center;border-radius:6px;padding:1px 6px;font-weight:700;color:#fff;font-size:12px}
 .bA{background:var(--a)}.bB{background:var(--b)}.bC{background:var(--c)}.bD{background:var(--d)}
 .pos{color:var(--pos)}.neg{color:var(--neg)}.mut{color:var(--muted)}
-td input{width:70px;background:var(--input);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:13px;text-align:right}
-td input.cl{width:170px;text-align:left}
+td input{width:54px;background:var(--input);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:13px;text-align:right}
+td input.cl{width:100%;min-width:150px;text-align:left}
 tr.filled td{background:var(--hl)}
-.buyers{white-space:normal;min-width:220px;max-width:300px;text-align:left;font-size:12px}
+.buyers{white-space:normal;min-width:170px;max-width:240px;text-align:left;font-size:11px}
+.buyers input{margin-bottom:4px}
 .buyers span{display:inline-block;background:var(--chip);border-radius:5px;padding:1px 6px;margin:1px 2px 1px 0}
 .spark{display:inline-flex;gap:1px;align-items:flex-end;height:18px}
 .spark i{display:block;width:4px;background:var(--accent);opacity:.75;border-radius:1px}
@@ -161,20 +163,22 @@ const C = {
   myDisc:{h:'Скидка распр. %',v:i=>parseFloat((INP[i.art]||{}).disc)||-1,raw:1,r:i=>`<td><input type="number" min="0" max="90" step="1" data-a="${esc(i.art)}" data-f="disc" value="${esc((INP[i.art]||{}).disc??'')}" placeholder="%"></td>`},
   salePrice:{h:'Цена распр.',v:i=>salePrice(i)||0,r:i=>{const p=salePrice(i);return p==null?'—':`<b>${fmt(p)}</b>`},cls:'sp'},
   saleSum:{h:'Сумма распр.',v:i=>(salePrice(i)||0)*i.stock,r:i=>{const p=salePrice(i);return p==null?'—':fmt(p*i.stock)},cls:'ss'},
+  stockFull:{h:'Остаток, шт',v:i=>i.stock,raw:1,r:i=>`<td><b>${fmt(i.stock)}</b><small>скл ${fmt(i.stSklad)} · маг ${fmt(i.stShops)}${i.stBrak?' · брак '+fmt(i.stBrak):''}</small></td>`},
+  clientBuyers:{h:'Клиент (кому продать) / кто покупал',l:1,v:i=>(INP[i.art]||{}).client||'',raw:1,r:i=>`<td class="buyers"><input class="cl" list="dl-${esc(i.art)}" data-a="${esc(i.art)}" data-f="client" value="${esc((INP[i.art]||{}).client??'')}" placeholder="выбрать / вписать"><datalist id="dl-${esc(i.art)}">${i.buyers.map(b=>`<option value="${esc(b[0])}">`).join('')}</datalist><br>${i.buyers.length?`<span title="${esc(i.buyers.map(b=>b[0]+' — '+b[1]+' шт, посл. '+b[2]).join('\n'))}">`+i.buyers.slice(0,3).map(b=>`${esc(b[0])} · ${fmt(b[1])} · ${b[2].slice(0,3)}`).join('</span><span>')+'</span>'+(i.buyers.length>3?`<span class="mut">+${i.buyers.length-3}</span>`:''):'<span class="mut">не покупали</span>'}</td>`},
   myClient:{h:'Клиент (кому продать)',v:i=>(INP[i.art]||{}).client||'',l:1,raw:1,r:i=>`<td class="l"><input class="cl" list="dl-${esc(i.art)}" data-a="${esc(i.art)}" data-f="client" value="${esc((INP[i.art]||{}).client??'')}" placeholder="выбрать / вписать"><datalist id="dl-${esc(i.art)}">${i.buyers.map(b=>`<option value="${esc(b[0])}">`).join('')}</datalist></td>`},
   buyers:{h:'Кто покупал (шт · посл. мес.)',l:1,v:i=>i.buyers.length,raw:1,r:i=>`<td class="buyers">${i.buyers.length?`<span title="${esc(i.buyers.map(b=>b[0]+' — '+b[1]+' шт, посл. '+b[2]).join('\n'))}">`+i.buyers.slice(0,4).map(b=>`${esc(b[0])} · ${fmt(b[1])} · ${b[2].slice(0,3)}`).join('</span><span>')+'</span>'+(i.buyers.length>4?`<span class="mut">+${i.buyers.length-4}</span>`:''):'<span class="mut">не покупали</span>'}</td>`},
 };
 const VIEWS = {
-  sale:{cols:['abc','name','stock','stSklad','stShops','stBrak','stockVal','q3','cover','price','realNew','myDisc','salePrice','saleSum','myClient','buyers'],
+  sale:{cols:['abc','name','stockFull','stockVal','q3','cover','price','realNew','myDisc','salePrice','saleSum','clientBuyers'],
         abc:'CD',stock:true,sort:['stockVal',-1],
         hint:'Кандидаты на распродажу: класс C и товары без продаж, у которых есть остаток. Впишите скидку и клиента — цена и сумма пересчитаются, ввод сохраняется в этом браузере. «Кто покупал» — клиенты из CRM, которые уже брали этот товар: им проще всего предложить.'},
-  abc:{cols:['abc','name','rev','share','cum','qty','clients','months','spark','stock','stSklad','stShops','cover','price','realNew','disc','myDisc','myClient'],
+  abc:{cols:['abc','name','rev','share','cum','qty','clients','spark','stockFull','cover','price','realNew','disc','myDisc','myClient'],
         abc:'',stock:false,sort:['rev',-1],
         hint:'ABC по выручке за весь период CRM: A — первые 80% выручки, B — следующие 15%, C — последние 5%. «Без продаж» — товар есть в остатках или прайсе, но в CRM продаж нет. «Запас, мес» = остаток / среднемесячные продажи за авг–окт.'},
   price:{cols:['abc','name','qty','price','realNew','disc','realAll','rev','stock','myDisc','myClient'],
         abc:'',stock:false,sort:['disc',-1],onlyPrice:true,
         hint:'Сравнение цены прайса (с 01.09) и фактической цены реализации = выручка / количество (сен–23 окт, без нулевых строк — тестеров). «Скидка факт %» — насколько в среднем продавали ниже прайса. Красным — скидка 15% и больше.'},
-  plan:{cols:['abc','name','stock','price','myDisc','salePrice','saleSum','myClient','buyers'],
+  plan:{cols:['abc','name','stock','price','myDisc','salePrice','saleSum','clientBuyers'],
         abc:'',stock:false,sort:['saleSum',-1],onlyFilled:true,
         hint:'Только позиции, где вы вписали скидку или клиента. Отсюда удобно скачать CSV и отправить агентам.'},
 };
