@@ -90,6 +90,7 @@ tr.filled td{background:var(--hl)}
     <select id="fAbc"><option value="">ABC: все</option><option>A</option><option>B</option><option>C</option><option value="D">Без продаж</option><option value="CD">C + без продаж</option></select>
     <select id="fLine"><option value="">Линия: все</option><option>Капус</option><option>Студио</option></select>
     <select id="fLoc" title="Где лежит остаток"><option value="">Остаток: везде</option><option value="sklad">есть на осн. складе</option><option value="shops">есть в магазинах</option><option value="onlyShops">только в магазинах</option><option value="onlySklad">только на складе</option><option value="brak">есть брак</option><option value="onlyBrak">только брак</option></select>
+    <label class="ck" style="font-size:13px;display:flex;gap:5px;align-items:center"><input type="checkbox" id="fDye" checked style="width:auto"> красители и оксиды</label>
     <select id="fSec"><option value="">Раздел прайса: все</option></select>
     <label><input type="checkbox" id="fStock"> только с остатком</label>
     <button class="btn" id="csv">Скачать CSV</button>
@@ -186,6 +187,8 @@ const VIEWS = {
 let view='sale', sort=VIEWS.sale.sort.slice();
 
 const LOC={sklad:i=>i.stSklad>0,shops:i=>i.stShops>0,onlyShops:i=>i.stShops>0&&!(i.stSklad>0),onlySklad:i=>i.stSklad>0&&!(i.stShops>0),brak:i=>i.stBrak>0,onlyBrak:i=>i.stBrak>0&&!(i.stock>0)};
+const DYE_SECT=new Set(['Крем- Краска Haaluronic acid','Крем-краска Blond Bar','Краска для волос Studio с экстрактом женьшеня и рисовыми протеинами','Крем-краска URBAN','Краска для бровей и ресниц','Специальное мелирование','Усилители цвета (корректор)','Тонирующие','Красители прямого действия "Rainbow"','Специальный блонд','Кремообразная окислительная Эмульсия','Оксиданты Blond Bar','Оксид "ActiOx" окислит.эмульсия']);
+const isDye=i=>DYE_SECT.has(i.section)||i.art==='2698'||i.art==='3200'||(i.section==='—'&&/краск|оксид|окисл/i.test(i.name));
 function rows(){
   const v=VIEWS[view], q=document.getElementById('q').value.trim().toLowerCase();
   const fa=document.getElementById('fAbc').value, fl=document.getElementById('fLine').value,
@@ -197,6 +200,7 @@ function rows(){
     if(fs && i.section!==fs) return false;
     if(st && !(i.stock>0) && !(floc==='brak'||floc==='onlyBrak')) return false;
     if(floc && !LOC[floc](i)) return false;
+    if(!document.getElementById('fDye').checked && isDye(i)) return false;
     if(v.onlyPrice && i.disc==null) return false;
     if(v.onlyFilled){ const x=INP[i.art]; if(!x||!(x.disc||x.client)) return false }
     if(q){ const x=INP[i.art]||{}; const h=(i.name+' '+i.art+' '+i.section+' '+i.buyers.map(b=>b[0]).join(' ')+' '+(x.client||'')).toLowerCase(); if(!h.includes(q)) return false }
@@ -239,7 +243,7 @@ document.querySelector('#tbl tbody').addEventListener('input',e=>{
   if(ss) ss.innerHTML=p==null?'—':fmt(p*it.stock);
   const x=INP[a]; tr.classList.toggle('filled',!!(x.disc||x.client));
 });
-['q','fAbc','fLine','fSec','fStock','fLoc'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+['q','fAbc','fLine','fSec','fStock','fLoc','fDye'].forEach(id=>document.getElementById(id).addEventListener('input',render));
 document.getElementById('clear').onclick=()=>{ if(confirm('Очистить все введённые скидки и клиентов?')){INP={};save();render()} };
 document.getElementById('csv').onclick=()=>{
   const r=rows();
